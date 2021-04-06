@@ -1,4 +1,4 @@
-function [SUBIM, Mid_area, Manual_Mid_area, Ligament_length] = Tendon_analysis_Makela;
+function [SUBIM, Ligament_area, Mid_area, Manual_Mid_area, Ligament_length] = Tendon_analysis_Makela;
 %% m-file for human tendons
 
 %% Change the used VOI diameter in create_SUBIM() function 
@@ -125,7 +125,7 @@ end
 % Area = subim_area(SUBIM, [info.PixelSpacing; info.SpacingBetweenSlices]); % Alternatively, if the dimensions are not equal
 
 
-
+% ----------------------------------------------------------------------------------------------------------------------------------------
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % HERE ADAM YOU CAN USE GINPUT TO PICK TWO LOCATIONS THAT ARE THE LIMITS
@@ -171,6 +171,8 @@ line2 = line([(floor(length(Ligament_area)/2)+Length_lims_auto)*voxelsize, (floo
 
 legend({'Profile' ; 'Manually' ; ''; 'Automatically'});
 
+
+% ----------------------------------------------------------------------------------------------------------------------------------------
 % % % % % % % % % % % % % % % % 
 % % % % % % % % % % % % % % % % 
 % % % % % % % % % % % % % % % % 
