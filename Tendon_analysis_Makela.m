@@ -125,6 +125,7 @@ end
 % Area = subim_area(SUBIM, [info.PixelSpacing; info.SpacingBetweenSlices]); % Alternatively, if the dimensions are not equal
 
 
+%
 % Some day I'll make the following into a separate function
 % ----------------------------------------------------------------------------------------------------------------------------------------
 
