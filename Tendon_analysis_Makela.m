@@ -9,7 +9,7 @@ function [SUBIM, Dicoms, Ligament_area, Mid_area, Manual_Mid_area, Ligament_leng
 
 
 % clear all, 
-close all, 
+% close all, 
 %clc;
 
 lowerlimit = -400; %Excludes all the pixels below this (background & softest tissue). Background needs to be excluded in order to calculate averages correctly without the background
@@ -20,7 +20,7 @@ lowerlimit = -400; %Excludes all the pixels below this (background & softest tis
 prompt = {'Enter your voxelsize (mm):'};
 q_title = 'Voxelsize';
 dims = [1 35];
-definput = {'0.044'};
+definput = {'0.040'};
 q_answer = inputdlg(prompt, q_title, dims, definput);
 
 voxelsize = str2num(cell2mat(definput));
@@ -255,7 +255,7 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
        
        
        %Slide show animation
-       for luup = 100:5:size(BW,3)-200
+       for luup = 100:20:size(BW,3)-200
        imshowpair(SUBIM(:,:,luup), BW_perimeter(:,:,luup))
        title([num2str(luup)])
        pause(0.05)
@@ -285,8 +285,10 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
 %%
     function [Dicoms] = load_tiffs()
         
-         path = uigetdir; %Choose the folder where the DICOMS are
-%         path = '/media/janne/Makela/Experimentdata/Tendons/Preli/Resized' % AK_bovine-tendon-test_2_01/
+        path = uigetdir(); %Choose the folder where the DICOMS are
+
+%          path = uigetdir('/media/janne/Makela/Experimentdata/Tendons/Preli2/'); %Choose the folder where the DICOMS are
+%         path = '/media/janne/Makela/Experimentdata/Tendons/Preli2/ % AK_bovine-tendon-test_2_01/
         
         
         f = filesep; %Checks what's the file separator for current operating system (windows,unix,linux)
