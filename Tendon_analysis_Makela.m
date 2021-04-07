@@ -1,4 +1,4 @@
-function [SUBIM, Ligament_area, Mid_area, Manual_Mid_area, Ligament_length] = Tendon_analysis_Makela;
+function [SUBIM, Dicoms, Ligament_area, Mid_area, Manual_Mid_area, Ligament_length] = Tendon_analysis_Makela(Dicoms);
 %% m-file for human tendons
 
 %% Change the used VOI diameter in create_SUBIM() function 
@@ -8,7 +8,9 @@ function [SUBIM, Ligament_area, Mid_area, Manual_Mid_area, Ligament_length] = Te
 %% Especially orientation-function is really inefficient 
 
 
-clear all, close all, clc;
+% clear all, 
+close all, 
+%clc;
 
 lowerlimit = -400; %Excludes all the pixels below this (background & softest tissue). Background needs to be excluded in order to calculate averages correctly without the background
 % upperlimit = 1500; %Upper limit can be added
@@ -28,21 +30,26 @@ voxelsize = str2num(cell2mat(definput));
 
 % LOAD IMAGES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% [Dicoms, info] = load_tiffs; 
-[Dicoms] = load_tiffs; 
+% Skips this if you execute the code with input
+% You perhaps need to first 'clear all', otherwise you'll run out of memory. 
+if nargin == 0
+    
+    % [Dicoms, info] = load_tiffs;
+    [Dicoms] = load_tiffs;
+    
+    
+    %Function for an average image from slides for picking plugs
+    createdicommasks(Dicoms);
+    
+    
+    % Rescaling
+    rescale_coff = calibrate_scale(Dicoms);
+    
+    
+    Dicoms = Dicoms.*rescale_coff(1)+rescale_coff(2); %Converting to HU
+    % Otherwise handles data using native pixel values (original, short integer value)
 
-
-%Function for an average image from slides for picking plugs
-createdicommasks(Dicoms);
-
-
-% Rescaling
-rescale_coff = calibrate_scale(Dicoms);
-
-
-Dicoms = Dicoms.*rescale_coff(1)+rescale_coff(2); %Converting to HU
-% Otherwise handles data using native pixel values (original, short integer value)
-
+end
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
