@@ -23,7 +23,7 @@ dims = [1 35];
 definput = {'0.040'};
 q_answer = inputdlg(prompt, q_title, dims, definput);
 
-voxelsize = str2num(cell2mat(definput));
+voxelsize = str2num(cell2mat(q_answer));
 % % % 
 
 
@@ -285,9 +285,9 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
 %%
     function [Dicoms] = load_tiffs()
         
-        path = uigetdir(); %Choose the folder where the DICOMS are
+%         path = uigetdir(); %Choose the folder where the DICOMS are
 
-%          path = uigetdir('/media/janne/Makela/Experimentdata/Tendons/Preli2/'); %Choose the folder where the DICOMS are
+         path = uigetdir('/media/janne/Makela/Experimentdata/Tendons/Preli2/'); %Choose the folder where the DICOMS are
 %         path = '/media/janne/Makela/Experimentdata/Tendons/Preli2/ % AK_bovine-tendon-test_2_01/
         
         
