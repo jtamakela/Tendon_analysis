@@ -70,7 +70,7 @@ N = N+1;
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Substituting background with zeros
-SUBIM(SUBIM<=lowerlimit) = 0;
+% SUBIM(SUBIM<=lowerlimit) = 0;
 % SUBIM(SUBIM>=upperlimit) = 0;
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
@@ -162,6 +162,7 @@ end
 % HERE ADAM YOU YOU DEFINE THE ROI AREA (Length_lims_auto). Increase this if you want average from longer length
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
 %Automatically
 Length_lims_auto = 30; % This is in slices
 
@@ -172,13 +173,15 @@ Manual_Mid_area = mean(Ligament_area(floor(Length_lims(1,2)) : floor(Length_lims
 
 pause(0.2)
 figure(2)
+
 line1 = line([Length_lims(1,2)*voxelsize Length_lims(1,2)*voxelsize], [0 15], 'Color','red','LineStyle','--');
 line2 = line([Length_lims(2,2)*voxelsize Length_lims(2,2)*voxelsize], [0 15],'Color','red','LineStyle','--');
 
 line1 = line([(floor(length(Ligament_area)/2)-Length_lims_auto)*voxelsize, (floor(length(Ligament_area)/2)-Length_lims_auto)*voxelsize], [0 15], 'Color','blue','LineStyle','--');
 line2 = line([(floor(length(Ligament_area)/2)+Length_lims_auto)*voxelsize, (floor(length(Ligament_area)/2)+Length_lims_auto)*voxelsize], [0 15],'Color','blue','LineStyle','--');
 
-legend({'Profile' ; 'Manually' ; ''; 'Automatically'});
+legend({'Diameter Profile' ; 'Cross-sectional area Profile', 'Manually' ; ''; 'Automatically'});
+
 
 
 % ----------------------------------------------------------------------------------------------------------------------------------------
@@ -217,7 +220,7 @@ figure(2);
 % Subfunctions below
 
 %%
-    function [AREA_M2, Ligament_length] = subim_area(SUBIM, resolution); 
+    function [AREA_M2, Diameter_profile, Ligament_length] = subim_area(SUBIM, resolution); 
 
 %        Here we use edge detection to calculate areas and stuff
 %        
@@ -271,12 +274,19 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
             pause(0.2); %Makes the figure visible
             figure(2); 
             plot([1:length(AREA_M2)].*resolution, AREA_M2, 'r--');
+            hold on;
             xlabel(['Depth (mm)'])
             ylabel(['Cross-sectional area (mm2)']);
+            
+            
+            Diameter_profile = 2*sqrt(AREA_M2/pi);
+            plot((1:length(Diameter_profile)).*resolution, Diameter_profile, 'x-')
+
             
             %Calculates length based on when diameter > 0.2
            Ligament_length = resolution.*length(AREA_M2(AREA_M2>0.2)) %Please excuse my dumbness. Calculates the length based on where there is tissue. 
 
+           
     end
 
 
