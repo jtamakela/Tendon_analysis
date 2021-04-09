@@ -70,7 +70,7 @@ N = N+1;
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Substituting background with zeros
-% SUBIM(SUBIM<=lowerlimit) = 0;
+SUBIM(SUBIM<=lowerlimit) = 0;
 % SUBIM(SUBIM>=upperlimit) = 0;
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
