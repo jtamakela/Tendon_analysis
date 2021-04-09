@@ -180,7 +180,7 @@ line2 = line([Length_lims(2,2)*voxelsize Length_lims(2,2)*voxelsize], [0 15],'Co
 line1 = line([(floor(length(Ligament_area)/2)-Length_lims_auto)*voxelsize, (floor(length(Ligament_area)/2)-Length_lims_auto)*voxelsize], [0 15], 'Color','blue','LineStyle','--');
 line2 = line([(floor(length(Ligament_area)/2)+Length_lims_auto)*voxelsize, (floor(length(Ligament_area)/2)+Length_lims_auto)*voxelsize], [0 15],'Color','blue','LineStyle','--');
 
-legend({'Diameter Profile' ; 'Cross-sectional area Profile', 'Manually' ; ''; 'Automatically'});
+legend({'Diameter Profile' ; 'Cross-sectional area Profile'; 'Manually' ; ''; 'Automatically'});
 
 
 
