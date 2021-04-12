@@ -1,4 +1,4 @@
-function [SUBIM, Dicoms, Ligament_area, Mid_area, Manual_Mid_area, Ligament_length] = Tendon_analysis_Makela(Dicoms);
+function [SUBIM, Dicoms, Ligament_area, Ligament_diameter, Mid_area, Manual_Mid_area, Ligament_length] = Tendon_analysis_Makela(Dicoms);
 %% m-file for human tendons
 
 %% Change the used VOI diameter in create_SUBIM() function 
@@ -70,7 +70,7 @@ N = N+1;
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Substituting background with zeros
-SUBIM(SUBIM<=lowerlimit) = 0;
+SUBIM(SUBIM<=lowerlimit) = -6000;
 % SUBIM(SUBIM>=upperlimit) = 0;
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
@@ -128,7 +128,7 @@ end
 % Edge detection
 
 
-[Ligament_area, Ligament_length] = subim_area(SUBIM, voxelsize); %Homogeneous dimensions
+[Ligament_area, Ligament_diameter, Ligament_length] = subim_area(SUBIM, voxelsize); %Homogeneous dimensions
 % Area = subim_area(SUBIM, [info.PixelSpacing; info.SpacingBetweenSlices]); % Alternatively, if the dimensions are not equal
 
 
@@ -166,7 +166,10 @@ end
 %Automatically
 Length_lims_auto = 30; % This is in slices
 
-Mid_area = mean(Ligament_area(floor(length(Ligament_area)/2)-Length_lims_auto : floor(length(Ligament_area)/2)+Length_lims_auto)) %Average from mean +- 1 mm (30px)
+length_index = [min(find(AREA_M2 >= min(AREA_M2(AREA_M2>0.1)))), max(find(AREA_M2 >= min(AREA_M2(AREA_M2>0.1))))];
+midpoint_index = mean(length_index);
+
+Mid_area = mean(Ligament_area(floor(midpoint_index)-Length_lims_auto : floor(midpoint_index)+Length_lims_auto)) %Average from mean +- 1 mm (30px)
 
 %Manually picked
 Manual_Mid_area = mean(Ligament_area(floor(Length_lims(1,2)) : floor(Length_lims(1,2)))) %Average from mean +- 1 mm (30px)
@@ -180,7 +183,7 @@ line2 = line([Length_lims(2,2)*voxelsize Length_lims(2,2)*voxelsize], [0 15],'Co
 line1 = line([(floor(length(Ligament_area)/2)-Length_lims_auto)*voxelsize, (floor(length(Ligament_area)/2)-Length_lims_auto)*voxelsize], [0 15], 'Color','blue','LineStyle','--');
 line2 = line([(floor(length(Ligament_area)/2)+Length_lims_auto)*voxelsize, (floor(length(Ligament_area)/2)+Length_lims_auto)*voxelsize], [0 15],'Color','blue','LineStyle','--');
 
-legend({'Diameter Profile' ; 'Cross-sectional area Profile'; 'Manually' ; ''; 'Automatically'});
+legend({'Cross-sectional area Profile'; 'Diameter Profile' ; 'Manually' ; ''; 'Automatically'});
 
 
 
@@ -229,42 +232,73 @@ figure(2);
 %        vois katsoa pinta-alan ja reunan pituuden joka slaissille
 % Testiä varten day9/1-8ACL-M7-MCL-ACLT
 
+figure; subplot(1,2,1); imagesc(SUBIM(:,:,200));
+axis equal;
 
         %Binary image
-       BW = imbinarize(SUBIM, 'adaptive');
+%        BW = imbinarize(SUBIM, 0.99);
+%        BW = imbinarize(SUBIM,'adaptive'); %,'ForegroundPolarity','bright','Sensitivity',0.99);
+
        
-       figure;
-       slice(double(BW),size(BW,2)/2,size(BW,1)/2,size(BW,3)/2)
-       colormap gray 
-       shading interp
+       %Need to do hole filling (*smirk)
+       BW_filled = imbinarize(imfill(SUBIM, 4,'holes'));
+
+       subplot(1,2,2); imagesc(BW_filled(:,:,200)); axis equal;
+
+       figure; imshowpair(SUBIM(:,:,200), BW_filled(:,:,200))
+        % ALTERNATIVELY
+        % Do the filling in the opposite order
+% % % % % % % % % % % % % % 
+% % % % % % % % % % % % % %        BW2 = imbinarize(BW_filled,'adaptive'); %,'ForegroundPolarity','bright','Sensitivity',0.99);
+% % % % % % % % % % % % % %        
+% % % % % % % % % % % % % %        figure; subplot(1,3,1); imagesc(SUBIM(:,:,200)); axis equal;
+% % % % % % % % % % % % % %        subplot(1,3,2); imagesc(BW2(:,:,200)), axis equal;
+% % % % % % % % % % % % % %        BW2_filled = imfill(BW2, 4,'holes');
+% % % % % % % % % % % % % %        subplot(1,3,3); imagesc(BW2_filled(:,:,200)), axis equal;
+% % % % % % % % % % % % % % 
        
-       testi = BW(:,:,392);
-       figure; 
-       imagesc(testi)
-       
+       %        
+%        figure;
+%        slice(double(BW),size(BW,2)/2,size(BW,1)/2,size(BW,3)/2)
+%        colormap gray 
+%        shading interp
+%        axis equal
+
+
+
+
+% % keke = BW_filled(:,:,200);
+% % figure; imagesc(keke)
+
+
 h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
        %Selecting only the middle part of the ligament
-       for luup = 1:size(BW,3)
-           BW_filtered(:,:,luup) = bwselect(BW(:,:,luup),floor(size(BW,1)/2),floor(size(BW,2)/2));
-%            AREA(luup) = bwarea(BW_filtered(:,:,luup));
-            BW_perimeter(:,:,luup) = bwperim(BW(:,:,luup),8);
+       for luup = 1:size(BW_filled,3)
+% % %            BW_filtered(:,:,luup) = bwselect(BW_filled(:,:,luup),floor(size(BW_filled,1)/2),floor(size(BW_filled,2)/2));
+%            AREA(luup) = bwarea(BW_filled_filtered(:,:,luup));
+% % %             BW_perimeter(:,:,luup) = bwperim(BW_filled(:,:,luup),4);
             
-            AREA(luup) = bwarea(BW(:,:,luup));
             
-            waitbar(luup/size(BW,3));
+            
+            AREA(luup) = bwarea(BW_filled(:,:,luup));
+% % %             AREA_CHECK(luup) = length(find(BW_filled(:,:,luup))>0).*(resolution).^2; %Calculated just using the perimeter 
+            
+            waitbar(luup/size(BW_filled,3));
        end
         
        close(h)
        
        
        %Slide show animation
-       for luup = 100:20:size(BW,3)-200
-       imshowpair(SUBIM(:,:,luup), BW_perimeter(:,:,luup))
+       figure;
+       pause(0.5);
+       for luup = 100:20:size(BW_filled,3)-200
+%        imshowpair(SUBIM(:,:,luup), BW_filtered(:,:,luup), 'montage')
+       imshowpair(SUBIM(:,:,luup), BW_filtered(:,:,luup))
        title([num2str(luup)])
        pause(0.05)
        end
        
-        
         
 %         AREA pitää kertoa resoluutiolla (35um?)
         
@@ -273,14 +307,18 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
         
             pause(0.2); %Makes the figure visible
             figure(2); 
-            plot([1:length(AREA_M2)].*resolution, AREA_M2, 'r--');
+            plot([1:length(AREA_M2)].*resolution, AREA_M2, 'r-');
+% %             plot([1:length(AREA_CHECK)].*resolution, AREA_CHECK, 'g--');
+
             hold on;
             xlabel(['Depth (mm)'])
             ylabel(['Cross-sectional area (mm2)']);
             
-            
+% % % % %             
             Diameter_profile = 2*sqrt(AREA_M2/pi);
-            plot((1:length(Diameter_profile)).*resolution, Diameter_profile, 'x-')
+% % % % %              Diameter_profile = length(find(BW_perimeter)>0);    /(2*pi);
+
+            plot((1:length(Diameter_profile)).*resolution, Diameter_profile, 'g--')
 
             
             %Calculates length based on when diameter > 0.2
@@ -296,6 +334,11 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
     function [Dicoms] = load_tiffs()
         
 %         path = uigetdir(); %Choose the folder where the DICOMS are
+
+        %If we load, we delete the previous stack 
+        if exist('Dicoms')
+            clear Dicoms
+        end
 
          path = uigetdir('/media/janne/Makela/Experimentdata/Tendons/Preli2/'); %Choose the folder where the DICOMS are
 %         path = '/media/janne/Makela/Experimentdata/Tendons/Preli2/ % AK_bovine-tendon-test_2_01/
