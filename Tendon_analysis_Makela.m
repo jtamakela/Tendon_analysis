@@ -166,13 +166,13 @@ end
 %Automatically
 Length_lims_auto = 30; % This is in slices
 
-length_index = [min(find(AREA_M2 >= min(AREA_M2(AREA_M2>0.1)))), max(find(AREA_M2 >= min(AREA_M2(AREA_M2>0.1))))];
+length_index = [min(find(Ligament_area >= min(Ligament_area(Ligament_area>0.1)))), max(find(Ligament_area >= min(Ligament_area(Ligament_area>0.1))))];
 midpoint_index = mean(length_index);
 
 Mid_area = mean(Ligament_area(floor(midpoint_index)-Length_lims_auto : floor(midpoint_index)+Length_lims_auto)) %Average from mean +- 1 mm (30px)
 
 %Manually picked
-Manual_Mid_area = mean(Ligament_area(floor(Length_lims(1,2)) : floor(Length_lims(1,2)))) %Average from mean +- 1 mm (30px)
+Manual_Mid_area = mean(Ligament_area(floor(Length_lims(1,2)) : floor(Length_lims(2,2)))) %Average from mean +- 1 mm (30px)
 
 pause(0.2)
 figure(2)
@@ -294,7 +294,7 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
        pause(0.5);
        for luup = 100:20:size(BW_filled,3)-200
 %        imshowpair(SUBIM(:,:,luup), BW_filtered(:,:,luup), 'montage')
-       imshowpair(SUBIM(:,:,luup), BW_filtered(:,:,luup))
+       imshowpair(SUBIM(:,:,luup), BW_filled(:,:,luup))
        title([num2str(luup)])
        pause(0.05)
        end
@@ -505,8 +505,8 @@ figure;
 % imagesc(dicom_median)
 
 %Determines at what depth we make the analysis
-lisaa = 0
-kyssari = 2
+lisaa = 0;
+kyssari = 2;
 while kyssari == 2
     lisaa = lisaa + 10;
     syvyys = floor(size(Dicoms,3)/4)+lisaa
