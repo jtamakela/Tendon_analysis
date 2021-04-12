@@ -180,8 +180,8 @@ figure(2)
 line1 = line([Length_lims(1,2)*voxelsize Length_lims(1,2)*voxelsize], [0 15], 'Color','red','LineStyle','--');
 line2 = line([Length_lims(2,2)*voxelsize Length_lims(2,2)*voxelsize], [0 15],'Color','red','LineStyle','--');
 
-line1 = line([(floor(length(Ligament_area)/2)-Length_lims_auto)*voxelsize, (floor(length(Ligament_area)/2)-Length_lims_auto)*voxelsize], [0 15], 'Color','blue','LineStyle','--');
-line2 = line([(floor(length(Ligament_area)/2)+Length_lims_auto)*voxelsize, (floor(length(Ligament_area)/2)+Length_lims_auto)*voxelsize], [0 15],'Color','blue','LineStyle','--');
+line1 = line([(floor(midpoint_index)-Length_lims_auto)*voxelsize, (floor(midpoint_index)-Length_lims_auto)*voxelsize], [0 14], 'Color','blue','LineStyle','--');
+line2 = line([(floor(midpoint_index)+Length_lims_auto)*voxelsize, (floor(midpoint_index)+Length_lims_auto)*voxelsize], [0 14],'Color','blue','LineStyle','--');
 
 legend({'Cross-sectional area Profile'; 'Diameter Profile' ; 'Manually' ; ''; 'Automatically'});
 
