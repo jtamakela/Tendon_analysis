@@ -241,7 +241,8 @@ figure(2);
 %        vois katsoa pinta-alan ja reunan pituuden joka slaissille
 % Testiä varten day9/1-8ACL-M7-MCL-ACLT
 
-figure(20); pause(0.2);
+pause(0.2);
+figure(20); 
 subplot(1,4,1); imagesc(SUBIM(:,:,200)); title('Original'); axis equal;
 
         %Binary image
@@ -267,7 +268,7 @@ subplot(1,4,1); imagesc(SUBIM(:,:,200)); title('Original'); axis equal;
               
        
        %Smoothing the figure
-       windowSize = 32;
+       windowSize = 24; %ARBITRARY %%%%%%%%%%%%%%%%%%%%%%%
        kernel = ones(windowSize) / windowSize ^ 2;
        
        %Allocating
@@ -282,7 +283,7 @@ subplot(1,4,1); imagesc(SUBIM(:,:,200)); title('Original'); axis equal;
        close(h);
        
        %This defines how much of the edges we are smoothing. Smaller means bigger area
-       edge_treshold = 0.3;
+       edge_treshold = 0.4; %ARBITRARY %%%%%%%%%%%%%%%%%%%%%%%
 
        binaryImage = blurryImage > edge_treshold;
        % --------------
