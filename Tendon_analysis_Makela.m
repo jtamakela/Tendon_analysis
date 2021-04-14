@@ -232,10 +232,10 @@ figure(2);
 
 %        Here we use edge detection to calculate areas and stuff
 %        
-%        bwarea kÃ¤yttÃ¤Ã¤ binÃ¤Ã¤rikuvaa
+%        bwarea käyttää binäärikuvaa
 %        
 %        vois katsoa pinta-alan ja reunan pituuden joka slaissille
-% TestiÃ¤ varten day9/1-8ACL-M7-MCL-ACLT
+% Testiä varten day9/1-8ACL-M7-MCL-ACLT
 
 figure(20); subplot(1,2,1); imagesc(SUBIM(:,:,200));
 axis equal;
@@ -307,7 +307,7 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
        
        dicom_slider(BW_filled,21)
         
-%         AREA pitÃ¤Ã¤ kertoa resoluutiolla (35um?)
+%         AREA pitää kertoa resoluutiolla (35um?)
         
 %             AREA_M2 = AREA.*(1e-3*resolution).^2; %In m2
             AREA_M2 = AREA.*(resolution).^2; %In mm2
