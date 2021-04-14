@@ -70,7 +70,7 @@ N = N+1;
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Substituting background with zeros
-SUBIM(SUBIM<=lowerlimit) = -6000;
+SUBIM(SUBIM<=lowerlimit) = -1000;
 % SUBIM(SUBIM>=upperlimit) = 0;
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
@@ -241,8 +241,8 @@ figure(2);
 %        vois katsoa pinta-alan ja reunan pituuden joka slaissille
 % Testiä varten day9/1-8ACL-M7-MCL-ACLT
 
-figure(20); subplot(1,2,1); imagesc(SUBIM(:,:,200));
-axis equal;
+figure(20); pause(0.2);
+subplot(1,4,1); imagesc(SUBIM(:,:,200)); title('Original'); axis equal;
 
         %Binary image
 %        BW = imbinarize(SUBIM, 0.99);
@@ -250,34 +250,62 @@ axis equal;
 
        
        %Need to do hole filling (*smirk)
-       BW_filled = imbinarize(imfill(SUBIM, 4,'holes'));
-
-       subplot(1,2,2); imagesc(BW_filled(:,:,200)); axis equal;
-
-       %figure(21); imshowpair(SUBIM(:,:,200), BW_filled(:,:,200))
-        % ALTERNATIVELY
-        % Do the filling in the opposite order
-% % % % % % % % % % % % % % 
-% % % % % % % % % % % % % %        BW2 = imbinarize(BW_filled,'adaptive'); %,'ForegroundPolarity','bright','Sensitivity',0.99);
-% % % % % % % % % % % % % %        
-% % % % % % % % % % % % % %        figure; subplot(1,3,1); imagesc(SUBIM(:,:,200)); axis equal;
-% % % % % % % % % % % % % %        subplot(1,3,2); imagesc(BW2(:,:,200)), axis equal;
-% % % % % % % % % % % % % %        BW2_filled = imfill(BW2, 4,'holes');
-% % % % % % % % % % % % % %        subplot(1,3,3); imagesc(BW2_filled(:,:,200)), axis equal;
-% % % % % % % % % % % % % % 
+       h = waitbar(0,'Filling the image, please wait...');
+       SUBIM_filled = imfill(SUBIM, 4,'holes');
+       close(h)
+              
+       figure(20);
+       pause(0.2)
+       subplot(1,4,2); imagesc(SUBIM_filled(:,:,200)); axis equal;  title('filled')
+      
        
-       %        
-%        figure;
-%        slice(double(BW),size(BW,2)/2,size(BW,1)/2,size(BW,3)/2)
-%        colormap gray 
-%        shading interp
-%        axis equal
+       BW_filled = imbinarize(SUBIM_filled);
+       figure(20);
+       pause(0.2)
+       subplot(1,4,3); imagesc(BW_filled(:,:,200)); axis equal; title('Binary image');
+              % -----------------------
+              
+       
+       %Smoothing the figure
+       windowSize = 32;
+       kernel = ones(windowSize) / windowSize ^ 2;
+       
+       %Allocating
+       blurryImage = zeros(size(BW_filled));
+       binaryImage = zeros(size(BW_filled));
+       
+       h = waitbar(0,'Smoothing the edges, please wait...');
+       for smoothing_i = 1: size(BW_filled,3)
+       blurryImage(:,:,smoothing_i) = conv2(single(BW_filled(:,:,smoothing_i)), kernel, 'same');
+       waitbar( smoothing_i/size(BW_filled,3));
+       end
+       close(h);
+       
+       %This defines how much of the edges we are smoothing. Smaller means bigger area
+       edge_treshold = 0.3;
 
+       binaryImage = blurryImage > edge_treshold;
+       % --------------
+       
 
+        figure(20)
+        pause(0.2)
+       subplot(1,4,4); imagesc(binaryImage(:,:,200)); axis equal; title('Blurred edges');
 
+       %Substituting
+       BW_filled = binaryImage;
+       
+       figure;
+       pause(0.2)
 
-% % keke = BW_filled(:,:,200);
-% % figure; imagesc(keke)
+       
+       %Think about changing this to a slider
+       for i = 200:50:length(binaryImage)-200
+        imshowpair( SUBIM_filled(:,:,i), binaryImage(:,:,i) , 'falsecolor', 'colorchannel', 'green-magenta', 'scaling', 'none')
+        title('Comparison');
+        pause(0.2)
+       end
+   
 
 
 h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
@@ -295,7 +323,7 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
             waitbar(luup/size(BW_filled,3));
        end
         
-       close(h)
+       close(h);
        
  %{      
        %Slide show animation
