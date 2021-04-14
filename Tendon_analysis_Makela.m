@@ -170,6 +170,7 @@ end
 Length_lims_auto = 30; % This is in slices
 
 length_index = [min(find(Ligament_area >= min(Ligament_area(Ligament_area>0.4)))), max(find(Ligament_area >= min(Ligament_area(Ligament_area>0.4))))];
+% I'm in the middle of this length_index = [min(find(Ligament_area >= min(Ligament_area(Ligament_area>0.4)))), length(Ligament_area(end/2:end)) + max(find(Ligament_area(end/2:end) >= min(Ligament_area(Ligament_area<0.4))))]; %Looking only at the upper half. Taking the smallesta index below 0.2
 midpoint_index = mean(length_index);
 
 Mid_area = mean(Ligament_area(floor(midpoint_index)-Length_lims_auto : floor(midpoint_index)+Length_lims_auto)) %Average from mean +- 1 mm (30px)
