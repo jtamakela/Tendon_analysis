@@ -139,6 +139,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % HERE ADAM YOU CAN USE GINPUT TO PICK TWO LOCATIONS THAT ARE THE LIMITS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+menu('Ready for Manual Measurement', 'OK'); %this is just to make the user aware the code is ready for the ginput
+
 pause(0.2)
 figure(200);
 title('Click here the top and bottom where you want to measure')
@@ -166,7 +169,7 @@ end
 %Automatically
 Length_lims_auto = 30; % This is in slices
 
-length_index = [min(find(Ligament_area >= min(Ligament_area(Ligament_area>0.1)))), max(find(Ligament_area >= min(Ligament_area(Ligament_area>0.1))))];
+length_index = [min(find(Ligament_area >= min(Ligament_area(Ligament_area>0.4)))), max(find(Ligament_area >= min(Ligament_area(Ligament_area>0.4))))];
 midpoint_index = mean(length_index);
 
 Mid_area = mean(Ligament_area(floor(midpoint_index)-Length_lims_auto : floor(midpoint_index)+Length_lims_auto)) %Average from mean +- 1 mm (30px)
@@ -177,13 +180,14 @@ Manual_Mid_area = mean(Ligament_area(floor(Length_lims(1,2)) : floor(Length_lims
 pause(0.2)
 figure(2)
 
-line1 = line([Length_lims(1,2)*voxelsize Length_lims(1,2)*voxelsize], [0 15], 'Color','red','LineStyle','--');
-line2 = line([Length_lims(2,2)*voxelsize Length_lims(2,2)*voxelsize], [0 15],'Color','red','LineStyle','--');
+line1 = line([Length_lims(1,2)*voxelsize Length_lims(1,2)*voxelsize], [0 20],'Color','red','LineStyle','--');
+line2 = line([Length_lims(2,2)*voxelsize Length_lims(2,2)*voxelsize], [0 20],'Color','red','LineStyle','--');
 
-line1 = line([(floor(midpoint_index)-Length_lims_auto)*voxelsize, (floor(midpoint_index)-Length_lims_auto)*voxelsize], [0 14], 'Color','blue','LineStyle','--');
-line2 = line([(floor(midpoint_index)+Length_lims_auto)*voxelsize, (floor(midpoint_index)+Length_lims_auto)*voxelsize], [0 14],'Color','blue','LineStyle','--');
+line1 = line([(floor(midpoint_index)-Length_lims_auto)*voxelsize, (floor(midpoint_index)-Length_lims_auto)*voxelsize], [0 20],'Color','blue','LineStyle','--');
+line2 = line([(floor(midpoint_index)+Length_lims_auto)*voxelsize, (floor(midpoint_index)+Length_lims_auto)*voxelsize], [0 20],'Color','blue','LineStyle','--');
 
-legend({'Cross-sectional area Profile'; 'Diameter Profile' ; 'Manually' ; ''; 'Automatically'});
+ax = gca; zz = findobj(gca,'Type','line');
+legend([zz(6) zz(5) zz(3) zz(1)], 'Cross-sectional area Profile', 'Diameter Profile', 'Manual Range', 'Automatic Range');
 
 
 
@@ -227,12 +231,12 @@ figure(2);
 
 %        Here we use edge detection to calculate areas and stuff
 %        
-%        bwarea käyttää binäärikuvaa
+%        bwarea kÃ¤yttÃ¤Ã¤ binÃ¤Ã¤rikuvaa
 %        
 %        vois katsoa pinta-alan ja reunan pituuden joka slaissille
-% Testiä varten day9/1-8ACL-M7-MCL-ACLT
+% TestiÃ¤ varten day9/1-8ACL-M7-MCL-ACLT
 
-figure; subplot(1,2,1); imagesc(SUBIM(:,:,200));
+figure(20); subplot(1,2,1); imagesc(SUBIM(:,:,200));
 axis equal;
 
         %Binary image
@@ -245,7 +249,7 @@ axis equal;
 
        subplot(1,2,2); imagesc(BW_filled(:,:,200)); axis equal;
 
-       figure; imshowpair(SUBIM(:,:,200), BW_filled(:,:,200))
+       %figure(21); imshowpair(SUBIM(:,:,200), BW_filled(:,:,200))
         % ALTERNATIVELY
         % Do the filling in the opposite order
 % % % % % % % % % % % % % % 
@@ -288,9 +292,9 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
         
        close(h)
        
-       
+ %{      
        %Slide show animation
-       figure;
+       figure(21);
        pause(0.5);
        for luup = 100:20:size(BW_filled,3)-200
 %        imshowpair(SUBIM(:,:,luup), BW_filtered(:,:,luup), 'montage')
@@ -298,16 +302,18 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
        title([num2str(luup)])
        pause(0.05)
        end
+%}
        
+       dicom_slider(BW_filled,21)
         
-%         AREA pitää kertoa resoluutiolla (35um?)
+%         AREA pitÃ¤Ã¤ kertoa resoluutiolla (35um?)
         
 %             AREA_M2 = AREA.*(1e-3*resolution).^2; %In m2
             AREA_M2 = AREA.*(resolution).^2; %In mm2
         
             pause(0.2); %Makes the figure visible
             figure(2); 
-            plot([1:length(AREA_M2)].*resolution, AREA_M2, 'r-');
+            plot([1:length(AREA_M2)].*resolution, AREA_M2, 'k-');
 % %             plot([1:length(AREA_CHECK)].*resolution, AREA_CHECK, 'g--');
 
             hold on;
@@ -979,3 +985,4 @@ end
 
 
 end
+
