@@ -306,20 +306,15 @@ subplot(1,4,1); imagesc(SUBIM(:,:,200)); title('Original'); axis equal;
         title('Comparison');
         pause(0.2)
        end
-   
+       %Whosing something from the middle 
+   imshowpair( SUBIM_filled(:,:,300), binaryImage(:,:,300) , 'falsecolor', 'colorchannel', 'green-magenta', 'scaling', 'none')
 
 
 h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
        %Selecting only the middle part of the ligament
        for luup = 1:size(BW_filled,3)
-% % %            BW_filtered(:,:,luup) = bwselect(BW_filled(:,:,luup),floor(size(BW_filled,1)/2),floor(size(BW_filled,2)/2));
-%            AREA(luup) = bwarea(BW_filled_filtered(:,:,luup));
-% % %             BW_perimeter(:,:,luup) = bwperim(BW_filled(:,:,luup),4);
-            
-            
-            
-            AREA(luup) = bwarea(BW_filled(:,:,luup));
-% % %             AREA_CHECK(luup) = length(find(BW_filled(:,:,luup))>0).*(resolution).^2; %Calculated just using the perimeter 
+
+           AREA(luup) = bwarea(BW_filled(:,:,luup));
             
             waitbar(luup/size(BW_filled,3));
        end
@@ -364,7 +359,7 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
             %Calculates length based on when diameter > 0.2
            Ligament_length = resolution.*length(AREA_M2(AREA_M2>0.2)) %Please excuse my dumbness. Calculates the length based on where there is tissue. 
 
-           
+           figure(2)
     end
 
 
