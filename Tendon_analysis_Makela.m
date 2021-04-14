@@ -283,7 +283,7 @@ subplot(1,4,1); imagesc(SUBIM(:,:,200)); title('Original'); axis equal;
        close(h);
        
        %This defines how much of the edges we are smoothing. Smaller means bigger area
-       edge_treshold = 0.4; %ARBITRARY %%%%%%%%%%%%%%%%%%%%%%%
+       edge_treshold = 0.35; %ARBITRARY %%%%%%%%%%%%%%%%%%%%%%%
 
        binaryImage = blurryImage > edge_treshold;
        % --------------
