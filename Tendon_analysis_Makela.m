@@ -1,4 +1,4 @@
-function [SUBIM, Dicoms, Tendon_area, Tendon_diameter, Mid_area, Manual_Mid_area, Tendon_length] = Tendon_analysis_Makela(Dicoms);
+function [SUBIM, Dicoms, Tendon_area, Tendon_diameter, Mid_area, Manual_Mid_area, Movmean_area, Tendon_length] = Tendon_analysis_Makela(Dicoms);
 %% m-file for human tendons
 
 %% Change the used VOI diameter in create_SUBIM() function 
