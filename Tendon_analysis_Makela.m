@@ -70,7 +70,7 @@ N = N+1;
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 % Substituting background with zeros
-SUBIM(SUBIM<=lowerlimit) = -6000;
+SUBIM(SUBIM<=lowerlimit) = -1000;
 % SUBIM(SUBIM>=upperlimit) = 0;
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
@@ -169,8 +169,12 @@ end
 %Automatically
 Length_lims_auto = 30; % This is in slices
 
-length_index = [min(find(Ligament_area >= min(Ligament_area(Ligament_area>0.4)))), max(find(Ligament_area >= min(Ligament_area(Ligament_area>0.4))))];
-% I'm in the middle of this length_index = [min(find(Ligament_area >= min(Ligament_area(Ligament_area>0.4)))), length(Ligament_area(end/2:end)) + max(find(Ligament_area(end/2:end) >= min(Ligament_area(Ligament_area<0.4))))]; %Looking only at the upper half. Taking the smallesta index below 0.2
+% Outputs the points where the length starts and ends
+% length_index = [min(find(Ligament_area >= min(Ligament_area(Ligament_area>0.4)))), max(find(Ligament_area >= min(Ligament_area(Ligament_area>0.4))))]; %Original
+
+% Version 2.0: Picks points based on minimum >0.4 and maximum>0.4, beyond the middle. More reliable.  
+length_index = [min(find(Ligament_area >= min(Ligament_area(Ligament_area>0.4)))), length(Ligament_area(end/2:end)) + min(find(Ligament_area(end/2:end) <= max(Ligament_area(Ligament_area<0.4))))]; %Looking only at the upper half. Taking the smallesta index below 0.2
+
 midpoint_index = mean(length_index);
 
 Mid_area = mean(Ligament_area(floor(midpoint_index)-Length_lims_auto : floor(midpoint_index)+Length_lims_auto)) %Average from mean +- 1 mm (30px)
@@ -232,13 +236,14 @@ figure(2);
 
 %        Here we use edge detection to calculate areas and stuff
 %        
-%        bwarea kÃ¤yttÃ¤Ã¤ binÃ¤Ã¤rikuvaa
+%        bwarea käyttää binäärikuvaa
 %        
 %        vois katsoa pinta-alan ja reunan pituuden joka slaissille
-% TestiÃ¤ varten day9/1-8ACL-M7-MCL-ACLT
+% Testiä varten day9/1-8ACL-M7-MCL-ACLT
 
-figure(20); subplot(1,2,1); imagesc(SUBIM(:,:,200));
-axis equal;
+pause(0.2);
+figure(20); 
+subplot(1,4,1); imagesc(SUBIM(:,:,200)); title('Original'); axis equal;
 
         %Binary image
 %        BW = imbinarize(SUBIM, 0.99);
@@ -246,52 +251,75 @@ axis equal;
 
        
        %Need to do hole filling (*smirk)
-       BW_filled = imbinarize(imfill(SUBIM, 4,'holes'));
-
-       subplot(1,2,2); imagesc(BW_filled(:,:,200)); axis equal;
-
-       %figure(21); imshowpair(SUBIM(:,:,200), BW_filled(:,:,200))
-        % ALTERNATIVELY
-        % Do the filling in the opposite order
-% % % % % % % % % % % % % % 
-% % % % % % % % % % % % % %        BW2 = imbinarize(BW_filled,'adaptive'); %,'ForegroundPolarity','bright','Sensitivity',0.99);
-% % % % % % % % % % % % % %        
-% % % % % % % % % % % % % %        figure; subplot(1,3,1); imagesc(SUBIM(:,:,200)); axis equal;
-% % % % % % % % % % % % % %        subplot(1,3,2); imagesc(BW2(:,:,200)), axis equal;
-% % % % % % % % % % % % % %        BW2_filled = imfill(BW2, 4,'holes');
-% % % % % % % % % % % % % %        subplot(1,3,3); imagesc(BW2_filled(:,:,200)), axis equal;
-% % % % % % % % % % % % % % 
+       h = waitbar(0,'Filling the image, please wait...');
+       SUBIM_filled = imfill(SUBIM, 4,'holes');
+       close(h)
+              
+       figure(20);
+       pause(0.2)
+       subplot(1,4,2); imagesc(SUBIM_filled(:,:,200)); axis equal;  title('filled')
+      
        
-       %        
-%        figure;
-%        slice(double(BW),size(BW,2)/2,size(BW,1)/2,size(BW,3)/2)
-%        colormap gray 
-%        shading interp
-%        axis equal
+       BW_filled = imbinarize(SUBIM_filled);
+       figure(20);
+       pause(0.2)
+       subplot(1,4,3); imagesc(BW_filled(:,:,200)); axis equal; title('Binary image');
+              % -----------------------
+              
+       
+       %Smoothing the figure
+       windowSize = 24; %ARBITRARY %%%%%%%%%%%%%%%%%%%%%%%
+       kernel = ones(windowSize) / windowSize ^ 2;
+       
+       %Allocating
+       blurryImage = zeros(size(BW_filled));
+       binaryImage = zeros(size(BW_filled));
+       
+       h = waitbar(0,'Smoothing the edges, please wait...');
+       for smoothing_i = 1: size(BW_filled,3)
+       blurryImage(:,:,smoothing_i) = conv2(single(BW_filled(:,:,smoothing_i)), kernel, 'same');
+       waitbar( smoothing_i/size(BW_filled,3));
+       end
+       close(h);
+       
+       %This defines how much of the edges we are smoothing. Smaller means bigger area
+       edge_treshold = 0.35; %ARBITRARY %%%%%%%%%%%%%%%%%%%%%%%
 
+       binaryImage = blurryImage > edge_treshold;
+       % --------------
+       
 
+        figure(20)
+        pause(0.2)
+       subplot(1,4,4); imagesc(binaryImage(:,:,200)); axis equal; title('Blurred edges');
 
+       %Substituting
+       BW_filled = binaryImage;
+       
+       figure;
+       pause(0.2)
 
-% % keke = BW_filled(:,:,200);
-% % figure; imagesc(keke)
+       
+       %Think about changing this to a slider
+       for i = 200:50:length(binaryImage)-200
+        imshowpair( SUBIM_filled(:,:,i), binaryImage(:,:,i) , 'falsecolor', 'colorchannel', 'green-magenta', 'scaling', 'none')
+        title('Comparison');
+        pause(0.2)
+       end
+       %Whosing something from the middle 
+   imshowpair( SUBIM_filled(:,:,300), binaryImage(:,:,300) , 'falsecolor', 'colorchannel', 'green-magenta', 'scaling', 'none')
 
 
 h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
        %Selecting only the middle part of the ligament
        for luup = 1:size(BW_filled,3)
-% % %            BW_filtered(:,:,luup) = bwselect(BW_filled(:,:,luup),floor(size(BW_filled,1)/2),floor(size(BW_filled,2)/2));
-%            AREA(luup) = bwarea(BW_filled_filtered(:,:,luup));
-% % %             BW_perimeter(:,:,luup) = bwperim(BW_filled(:,:,luup),4);
-            
-            
-            
-            AREA(luup) = bwarea(BW_filled(:,:,luup));
-% % %             AREA_CHECK(luup) = length(find(BW_filled(:,:,luup))>0).*(resolution).^2; %Calculated just using the perimeter 
+
+           AREA(luup) = bwarea(BW_filled(:,:,luup));
             
             waitbar(luup/size(BW_filled,3));
        end
         
-       close(h)
+       close(h);
        
  %{      
        %Slide show animation
@@ -307,7 +335,7 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
        
        dicom_slider(BW_filled,21)
         
-%         AREA pitÃ¤Ã¤ kertoa resoluutiolla (35um?)
+%         AREA pitää kertoa resoluutiolla (35um?)
         
 %             AREA_M2 = AREA.*(1e-3*resolution).^2; %In m2
             AREA_M2 = AREA.*(resolution).^2; %In mm2
@@ -331,7 +359,7 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
             %Calculates length based on when diameter > 0.2
            Ligament_length = resolution.*length(AREA_M2(AREA_M2>0.2)) %Please excuse my dumbness. Calculates the length based on where there is tissue. 
 
-           
+           figure(2)
     end
 
 
