@@ -296,7 +296,7 @@ subplot(1,4,1); imagesc(SUBIM(:,:,200)); title('Original'); axis equal;
        %Substituting
        BW_filled = binaryImage;
        
-       figure;
+       figure(3); %figure number was missing here
        pause(0.2)
 
        
