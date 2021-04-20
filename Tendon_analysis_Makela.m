@@ -1,4 +1,4 @@
-function [SUBIM, Dicoms, Ligament_area, Ligament_diameter, Mid_area, Manual_Mid_area, Ligament_length] = Tendon_analysis_Makela(Dicoms);
+function [SUBIM, Dicoms, Tendon_area, Tendon_diameter, Mid_area, Manual_Mid_area, Movmean_area, Tendon_length] = Tendon_analysis_Makela(Dicoms);
 %% m-file for human tendons
 
 %% Change the used VOI diameter in create_SUBIM() function 
@@ -128,7 +128,7 @@ end
 % Edge detection
 
 
-[Ligament_area, Ligament_diameter, Ligament_length] = subim_area(SUBIM, voxelsize); %Homogeneous dimensions
+[Tendon_area, Tendon_diameter, Tendon_length] = subim_area(SUBIM, voxelsize); %Homogeneous dimensions
 % Area = subim_area(SUBIM, [info.PixelSpacing; info.SpacingBetweenSlices]); % Alternatively, if the dimensions are not equal
 
 
@@ -170,17 +170,26 @@ end
 Length_lims_auto = 30; % This is in slices
 
 % Outputs the points where the length starts and ends
-% length_index = [min(find(Ligament_area >= min(Ligament_area(Ligament_area>0.4)))), max(find(Ligament_area >= min(Ligament_area(Ligament_area>0.4))))]; %Original
+% length_index = [min(find(Tendon_area >= min(Tendon_area(Tendon_area>0.4)))), max(find(Tendon_area >= min(Tendon_area(Tendon_area>0.4))))]; %Original
 
 % Version 2.0: Picks points based on minimum >0.4 and maximum>0.4, beyond the middle. More reliable.  
-length_index = [min(find(Ligament_area >= min(Ligament_area(Ligament_area>0.4)))), length(Ligament_area(end/2:end)) + min(find(Ligament_area(end/2:end) <= max(Ligament_area(Ligament_area<0.4))))]; %Looking only at the upper half. Taking the smallesta index below 0.2
+length_index = [min(find(Tendon_area >= min(Tendon_area(Tendon_area>0.4)))), length(Tendon_area(end/2:end)) + min(find(Tendon_area(end/2:end) <= max(Tendon_area(Tendon_area<0.4))))]; %Looking only at the upper half. Taking the smallesta index below 0.2
 
 midpoint_index = mean(length_index);
 
-Mid_area = mean(Ligament_area(floor(midpoint_index)-Length_lims_auto : floor(midpoint_index)+Length_lims_auto)) %Average from mean +- 1 mm (30px)
+Mid_area = mean(Tendon_area(floor(midpoint_index)-Length_lims_auto : floor(midpoint_index)+Length_lims_auto)) %Average from mean +- 1 mm (30px)
 
 %Manually picked
-Manual_Mid_area = mean(Ligament_area(floor(Length_lims(1,2)) : floor(Length_lims(2,2)))) %Average from mean +- 1 mm (30px)
+Manual_Mid_area = mean(Tendon_area(floor(Length_lims(1,2)) : floor(Length_lims(2,2)))) %Average from mean +- 1 mm (30px)
+
+%Lowest moving average within tendon
+resolution = 0.04;
+movavgwindow = 5 / resolution; %moving average of 125 slices...125 slices * 0.04mm resolution = 5mm
+movmeanarray = movmean(Tendon_area(length_index(1):length_index(2)),movavgwindow,'Endpoints','discard');
+Movmean_area = min(movmeanarray) %find lowest moving average
+movavgidx1 = length_index(1) + find(movmeanarray == (Movmean_area)); %index position in array of first slice of lowest moving average, account for moving window only commencing at length_index(1)
+movavgidx2 = movavgidx1 + movavgwindow; %last slice included in the used moving average
+
 
 pause(0.2)
 figure(2)
@@ -188,11 +197,14 @@ figure(2)
 line1 = line([Length_lims(1,2)*voxelsize Length_lims(1,2)*voxelsize], [0 20],'Color','red','LineStyle','--');
 line2 = line([Length_lims(2,2)*voxelsize Length_lims(2,2)*voxelsize], [0 20],'Color','red','LineStyle','--');
 
-line1 = line([(floor(midpoint_index)-Length_lims_auto)*voxelsize, (floor(midpoint_index)-Length_lims_auto)*voxelsize], [0 20],'Color','blue','LineStyle','--');
-line2 = line([(floor(midpoint_index)+Length_lims_auto)*voxelsize, (floor(midpoint_index)+Length_lims_auto)*voxelsize], [0 20],'Color','blue','LineStyle','--');
+line3 = line([(floor(midpoint_index)-Length_lims_auto)*voxelsize, (floor(midpoint_index)-Length_lims_auto)*voxelsize], [0 20],'Color','blue','LineStyle','--');
+line4 = line([(floor(midpoint_index)+Length_lims_auto)*voxelsize, (floor(midpoint_index)+Length_lims_auto)*voxelsize], [0 20],'Color','blue','LineStyle','--');
+
+line5 = line([movavgidx1*resolution movavgidx1*resolution], [0 20],'Color','m','LineStyle','--');
+line6 = line([movavgidx2*resolution movavgidx2*resolution], [0 20],'Color','m','LineStyle','--');
 
 ax = gca; zz = findobj(gca,'Type','line');
-legend([zz(6) zz(5) zz(3) zz(1)], 'Cross-sectional area Profile', 'Diameter Profile', 'Manual Range', 'Automatic Range');
+legend([zz(8) zz(7) zz(5) zz(3) zz(1)], 'Cross-sectional area Profile', 'Diameter Profile', 'Manual Range', 'Automatic 60 slices', 'Automatic 5mm moving average');
 
 
 
@@ -232,7 +244,7 @@ figure(2);
 % Subfunctions below
 
 %%
-    function [AREA_M2, Diameter_profile, Ligament_length] = subim_area(SUBIM, resolution); 
+    function [AREA_M2, Diameter_profile, Tendon_length] = subim_area(SUBIM, resolution); 
 
 %        Here we use edge detection to calculate areas and stuff
 %        
@@ -311,7 +323,7 @@ subplot(1,4,1); imagesc(SUBIM(:,:,200)); title('Original'); axis equal;
 
 
 h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
-       %Selecting only the middle part of the ligament
+       %Selecting only the middle part of the tendon
        for luup = 1:size(BW_filled,3)
 
            AREA(luup) = bwarea(BW_filled(:,:,luup));
@@ -346,7 +358,7 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
 % %             plot([1:length(AREA_CHECK)].*resolution, AREA_CHECK, 'g--');
 
             hold on;
-            xlabel(['Depth (mm)'])
+            xlabel(['Length (mm)'])
             ylabel(['Cross-sectional area (mm2)']);
             
 % % % % %             
@@ -357,7 +369,7 @@ h = waitbar(0,'Checking perimeter, please wait...'); %Display waitbar
 
             
             %Calculates length based on when diameter > 0.2
-           Ligament_length = resolution.*length(AREA_M2(AREA_M2>0.2)) %Please excuse my dumbness. Calculates the length based on where there is tissue. 
+           Tendon_length = resolution.*length(AREA_M2(AREA_M2>0.2)) %Please excuse my dumbness. Calculates the length based on where there is tissue. 
 
            figure(2)
     end
