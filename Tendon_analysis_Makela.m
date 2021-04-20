@@ -1,4 +1,4 @@
-function [SUBIM, Dicoms, Tendon_area, Tendon_diameter, Mid_area, Manual_Mid_area, Movmean_area, Tendon_length] = Tendon_analysis_Makela(Dicoms);
+function [SUBIM, Dicoms, Tendon_area, Tendon_diameter, Manual_Mid_area, Movmean_area, Tendon_length] = Tendon_analysis_Makela(Dicoms);
 %% m-file for human tendons
 
 %% Change the used VOI diameter in create_SUBIM() function 
@@ -20,7 +20,8 @@ lowerlimit = -400; %Excludes all the pixels below this (background & softest tis
 prompt = {'Enter your voxelsize (mm):'};
 q_title = 'Voxelsize';
 dims = [1 35];
-definput = {'0.040'};
+%definput = {'0.040'};
+definput = {'0.03472'};
 q_answer = inputdlg(prompt, q_title, dims, definput);
 
 voxelsize = str2num(cell2mat(q_answer));
@@ -173,21 +174,25 @@ Length_lims_auto = 30; % This is in slices
 % length_index = [min(find(Tendon_area >= min(Tendon_area(Tendon_area>0.4)))), max(find(Tendon_area >= min(Tendon_area(Tendon_area>0.4))))]; %Original
 
 % Version 2.0: Picks points based on minimum >0.4 and maximum>0.4, beyond the middle. More reliable.  
-length_index = [min(find(Tendon_area >= min(Tendon_area(Tendon_area>0.4)))), length(Tendon_area(end/2:end)) + min(find(Tendon_area(end/2:end) <= max(Tendon_area(Tendon_area<0.4))))]; %Looking only at the upper half. Taking the smallesta index below 0.2
+%length_index = [min(find(Tendon_area >= min(Tendon_area(Tendon_area>0.4)))), length(Tendon_area(end/2:end)) + min(find(Tendon_area(end/2:end) <= max(Tendon_area(Tendon_area<0.4))))]; %Looking only at the upper half. Taking the smallesta index below 0.2
 
-midpoint_index = mean(length_index);
+%midpoint_index = mean(length_index);
 
-Mid_area = mean(Tendon_area(floor(midpoint_index)-Length_lims_auto : floor(midpoint_index)+Length_lims_auto)) %Average from mean +- 1 mm (30px)
+%Mid_area = mean(Tendon_area(floor(midpoint_index)-Length_lims_auto : floor(midpoint_index)+Length_lims_auto)) %Average from mean +- 1 mm (30px)
 
 %Manually picked
 Manual_Mid_area = mean(Tendon_area(floor(Length_lims(1,2)) : floor(Length_lims(2,2)))) %Average from mean +- 1 mm (30px)
 
 %Lowest moving average within tendon
-resolution = 0.04;
-movavgwindow = 5 / resolution; %moving average of 125 slices...125 slices * 0.04mm resolution = 5mm
-movmeanarray = movmean(Tendon_area(length_index(1):length_index(2)),movavgwindow,'Endpoints','discard');
+%resolution = 0.04;
+resolution = 0.03472;
+%movavgwindow = 5 / resolution; %moving average of 125 slices...125 slices * 0.04mm resolution = 5mm
+movavgwindow = 2.5 / resolution; 
+%movmeanarray = movmean(Tendon_area(length_index(1):length_index(2)),movavgwindow,'Endpoints','discard');
+movmeanarray = movmean(Tendon_area,movavgwindow,'Endpoints','discard');
 Movmean_area = min(movmeanarray) %find lowest moving average
-movavgidx1 = length_index(1) + find(movmeanarray == (Movmean_area)); %index position in array of first slice of lowest moving average, account for moving window only commencing at length_index(1)
+%movavgidx1 = length_index(1) + find(movmeanarray == (Movmean_area)); %index position in array of first slice lowest moving average, account for moving window only commencing at length_index(1)
+movavgidx1 = find(movmeanarray == (Movmean_area)); %
 movavgidx2 = movavgidx1 + movavgwindow; %last slice included in the used moving average
 
 
@@ -197,14 +202,15 @@ figure(2)
 line1 = line([Length_lims(1,2)*voxelsize Length_lims(1,2)*voxelsize], [0 20],'Color','red','LineStyle','--');
 line2 = line([Length_lims(2,2)*voxelsize Length_lims(2,2)*voxelsize], [0 20],'Color','red','LineStyle','--');
 
-line3 = line([(floor(midpoint_index)-Length_lims_auto)*voxelsize, (floor(midpoint_index)-Length_lims_auto)*voxelsize], [0 20],'Color','blue','LineStyle','--');
-line4 = line([(floor(midpoint_index)+Length_lims_auto)*voxelsize, (floor(midpoint_index)+Length_lims_auto)*voxelsize], [0 20],'Color','blue','LineStyle','--');
+%line3 = line([(floor(midpoint_index)-Length_lims_auto)*voxelsize, (floor(midpoint_index)-Length_lims_auto)*voxelsize], [0 20],'Color','blue','LineStyle','--');
+%line4 = line([(floor(midpoint_index)+Length_lims_auto)*voxelsize, (floor(midpoint_index)+Length_lims_auto)*voxelsize], [0 20],'Color','blue','LineStyle','--');
 
 line5 = line([movavgidx1*resolution movavgidx1*resolution], [0 20],'Color','m','LineStyle','--');
 line6 = line([movavgidx2*resolution movavgidx2*resolution], [0 20],'Color','m','LineStyle','--');
 
 ax = gca; zz = findobj(gca,'Type','line');
-legend([zz(8) zz(7) zz(5) zz(3) zz(1)], 'Cross-sectional area Profile', 'Diameter Profile', 'Manual Range', 'Automatic 60 slices', 'Automatic 5mm moving average');
+%legend([zz(8) zz(7) zz(5) zz(3) zz(1)], 'Cross-sectional area Profile', 'Diameter Profile', 'Manual Range', 'Automatic 60 slices', 'Automatic 5mm moving average');
+legend([zz(6) zz(5) zz(3) zz(1)], 'Cross-sectional area Profile', 'Diameter Profile', 'Manual Range', 'Automatic 2mm moving average');
 
 
 
@@ -308,7 +314,7 @@ subplot(1,4,1); imagesc(SUBIM(:,:,200)); title('Original'); axis equal;
        %Substituting
        BW_filled = binaryImage;
        
-       figure(3); %figure number was missing here
+       figure(3);
        pause(0.2)
 
        
@@ -1026,4 +1032,3 @@ end
 
 
 end
-
