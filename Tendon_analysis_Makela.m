@@ -202,14 +202,15 @@ movavgidx2 = movavgidx1 + movavgwindow; %last slice included in the used moving 
 pause(0.2)
 figure(2)
 
-line1 = line([Length_lims(1,2)*voxelsize Length_lims(1,2)*voxelsize], [0 10],'Color','red','LineStyle','--');
-line2 = line([Length_lims(2,2)*voxelsize Length_lims(2,2)*voxelsize], [0 10],'Color','red','LineStyle','--');
+yL = get(gca,'YLim');
+line1 = line([Length_lims(1,2)*voxelsize Length_lims(1,2)*voxelsize], [yL],'Color','red','LineStyle','--');
+line2 = line([Length_lims(2,2)*voxelsize Length_lims(2,2)*voxelsize], [yL],'Color','red','LineStyle','--');
 
 %line3 = line([(floor(midpoint_index)-Length_lims_auto)*voxelsize, (floor(midpoint_index)-Length_lims_auto)*voxelsize], [0 20],'Color','blue','LineStyle','--');
 %line4 = line([(floor(midpoint_index)+Length_lims_auto)*voxelsize, (floor(midpoint_index)+Length_lims_auto)*voxelsize], [0 20],'Color','blue','LineStyle','--');
 
-line5 = line([movavgidx1*voxelsize movavgidx1*voxelsize], [0 10],'Color','m','LineStyle','--');
-line6 = line([movavgidx2*voxelsize movavgidx2*voxelsize], [0 10],'Color','m','LineStyle','--');
+line5 = line([movavgidx1*voxelsize movavgidx1*voxelsize], [yL],'Color','m','LineStyle','--');
+line6 = line([movavgidx2*voxelsize movavgidx2*voxelsize], [yL],'Color','m','LineStyle','--');
 
 ax = gca; zz = findobj(gca,'Type','line');
 %legend([zz(8) zz(7) zz(5) zz(3) zz(1)], 'Cross-sectional area Profile', 'Diameter Profile', 'Manual Range', 'Automatic 60 slices', 'Automatic 5mm moving average');
@@ -492,7 +493,8 @@ hold on;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Square size
     % Edit how you like. 
-    square_radius = 30; %110; %Square size 
+    square_radius1 = 30; %110; %Square size
+    square_radius2 = 95; %using 100 does fit, but just barely
     buffer = 5; %How much of the figure is cropped from corners
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -515,6 +517,7 @@ ycoord = floor(ycoord);
 
 
 % Drawing the latest rectangle where the subimages are taken
+%{
 for i = 1:2
     text(xcoord(i),ycoord(i),num2str(i),'HorizontalAlignment','center');
 
@@ -524,12 +527,34 @@ for i = 1:2
     line([window(1,1,i) window(1,2,i)], [window(2,2,i) window(2,2,i)],'Color','red','LineStyle','-','Linewidth', 2);
     line([window(1,1,i) window(1,1,i)], [window(2,1,i) window(2,2,i)],'Color','red','LineStyle','-','Linewidth', 2);
 end
+%}
+    %SQUARE RADIUS 1 FOR AIR
+    text(xcoord(1),ycoord(1),num2str(1),'HorizontalAlignment','center');
+
+    window(:,:,1) = [xcoord(1)-square_radius1 xcoord(1)+square_radius1; ycoord(1)-square_radius1 ycoord(1)+square_radius1]; %EDIT THIS IF YOU NEED TO GO THROUGH MORE
+    line([window(1,1,1) window(1,2,1)], [window(2,1,1) window(2,1,1)],'Color','red','LineStyle','-','Linewidth', 2);
+    line([window(1,2,1) window(1,2,1)], [window(2,1,1) window(2,2,1)],'Color','red','LineStyle','-','Linewidth', 2);
+    line([window(1,1,1) window(1,2,1)], [window(2,2,1) window(2,2,1)],'Color','red','LineStyle','-','Linewidth', 2);
+    line([window(1,1,1) window(1,1,1)], [window(2,1,1) window(2,2,1)],'Color','red','LineStyle','-','Linewidth', 2);
+
+    %SQUARE RADIUS 2 FOR WATER
+    text(xcoord(2),ycoord(2),num2str(2),'HorizontalAlignment','center');
+
+    window(:,:,2) = [xcoord(2)-square_radius2 xcoord(2)+square_radius2; ycoord(2)-square_radius2 ycoord(2)+square_radius2]; %EDIT THIS IF YOU NEED TO GO THROUGH MORE
+    line([window(1,1,2) window(1,2,2)], [window(2,1,2) window(2,1,2)],'Color','red','LineStyle','-','Linewidth', 2);
+    line([window(1,2,2) window(1,2,2)], [window(2,1,2) window(2,2,2)],'Color','red','LineStyle','-','Linewidth', 2);
+    line([window(1,1,2) window(1,2,2)], [window(2,2,2) window(2,2,2)],'Color','red','LineStyle','-','Linewidth', 2);
+    line([window(1,1,2) window(1,1,2)], [window(2,1,2) window(2,2,2)],'Color','red','LineStyle','-','Linewidth', 2);
+    
+    
+%end
 
 question = menu('Satisfied?','1) Yes','2) No');
 
 if question == 2
 createdicommasks(Dicoms) %Just plotting the figure again
 %plots older rectangles again
+%{
 for i = 1:2 %NOT TESTED
     text(xcoord(i),ycoord(i),num2str(i),'HorizontalAlignment','center');
 
@@ -539,6 +564,25 @@ for i = 1:2 %NOT TESTED
     line([window(1,1,i) window(1,2,i)], [window(2,2,i) window(2,2,i)],'Color','red','LineStyle','-','Linewidth', 2);
     line([window(1,1,i) window(1,1,i)], [window(2,1,i) window(2,2,i)],'Color','red','LineStyle','-','Linewidth', 2);
 end
+%}
+%NOT TESTED
+    text(xcoord(1),ycoord(1),num2str(1),'HorizontalAlignment','center');
+
+    window(:,:,1) = [xcoord(1)-square_radius1 xcoord(1)+square_radius1; ycoord(1)-square_radius1 ycoord(1)+square_radius1]; %EDIT THIS IF YOU NEED TO GO THROUGH MORE
+    line([window(1,1,1) window(1,2,1)], [window(2,1,1) window(2,1,1)],'Color','red','LineStyle','-','Linewidth', 2);
+    line([window(1,2,1) window(1,2,1)], [window(2,1,1) window(2,2,1)],'Color','red','LineStyle','-','Linewidth', 2);
+    line([window(1,1,1) window(1,2,1)], [window(2,2,1) window(2,2,1)],'Color','red','LineStyle','-','Linewidth', 2);
+    line([window(1,1,1) window(1,1,1)], [window(2,1,1) window(2,2,1)],'Color','red','LineStyle','-','Linewidth', 2);
+
+    %SQUARE RADIUS 2 FOR WATER
+    text(xcoord(2),ycoord(2),num2str(2),'HorizontalAlignment','center');
+
+    window(:,:,2) = [xcoord(2)-square_radius2 xcoord(2)+square_radius2; ycoord(2)-square_radius2 ycoord(2)+square_radius2]; %EDIT THIS IF YOU NEED TO GO THROUGH MORE
+    line([window(1,1,2) window(1,2,2)], [window(2,1,2) window(2,1,2)],'Color','red','LineStyle','-','Linewidth', 2);
+    line([window(1,2,2) window(1,2,2)], [window(2,1,2) window(2,2,2)],'Color','red','LineStyle','-','Linewidth', 2);
+    line([window(1,1,2) window(1,2,2)], [window(2,2,2) window(2,2,2)],'Color','red','LineStyle','-','Linewidth', 2);
+    line([window(1,1,2) window(1,1,2)], [window(2,1,2) window(2,2,2)],'Color','red','LineStyle','-','Linewidth', 2);
+  
 end
 
 end %while question == 2
@@ -580,13 +624,24 @@ end
 % % % % % % figure; hist(testia);
 
 i = 1;
-air = mean2(Dicoms( window(2,1,i):window(2,2,i),  window(1,1,i):window(1,2,i), syvyys));
-air_std = std2(Dicoms( window(2,1,i):window(2,2,i),  window(1,1,i):window(1,2,i), syvyys));
-
+%air = mean2(Dicoms( window(2,1,i):window(2,2,i),  window(1,1,i):window(1,2,i), syvyys));
+%air_std = std2(Dicoms( window(2,1,i):window(2,2,i),  window(1,1,i):window(1,2,i), syvyys));
+air_matrix(:,:,1) = (Dicoms( window(2,1,i):window(2,2,i),  window(1,1,i):window(1,2,i), syvyys-50)); %maybe there is a better way to do this than to first create a row then add rows via "end+1"...
+for ii = (syvyys-49):(syvyys+50)
+air_matrix(:,:,end+1) = (Dicoms( window(2,1,i):window(2,2,i),  window(1,1,i):window(1,2,i), ii));
+end
+air=mean2(air_matrix);
+air_std = std2(air_matrix);
 
 i = 2;
-water = mean2(Dicoms( window(2,1,i):window(2,2,i),  window(1,1,i):window(1,2,i), syvyys));
-water_std = std2(Dicoms( window(2,1,i):window(2,2,i),  window(1,1,i):window(1,2,i), syvyys));
+%water = mean2(Dicoms( window(2,1,i):window(2,2,i),  window(1,1,i):window(1,2,i), syvyys));
+%water_std = std2(Dicoms( window(2,1,i):window(2,2,i),  window(1,1,i):window(1,2,i), syvyys));
+water_matrix(:,:,1) = (Dicoms( window(2,1,i):window(2,2,i),  window(1,1,i):window(1,2,i), syvyys-50)); %maybe there is a better way to do this than to first create a row then add rows via "end+1"...
+for ii = (syvyys-49):(syvyys+50)
+water_matrix(:,:,end+1) = (Dicoms( window(2,1,i):window(2,2,i),  window(1,1,i):window(1,2,i), ii));
+end
+water=mean2(water_matrix);
+water_std = std2(water_matrix);
 
 disp(['-----'])
 disp(['Air voxel value: ', num2str(floor(air)), ' +- ', num2str(floor(air_std))]);
